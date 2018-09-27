@@ -20,10 +20,10 @@ uniform vec3 pos1;
 
 
 
-// Uppgift 3: Soft-skinning på GPU
+// Uppgift 3: Soft-skinning pï¿½ GPU
 //
-// Flytta över din implementation av soft skinning från CPU-sidan
-// till vertexshadern. Mer info finns på hemsidan.
+// Flytta ï¿½ver din implementation av soft skinning frï¿½n CPU-sidan
+// till vertexshadern. Mer info finns pï¿½ hemsidan.
 
 void main(void)
 {
@@ -33,28 +33,28 @@ void main(void)
                            0, 1, 0, -pos0.y,
                            0, 0, 1, -pos0.z,
                            0, 0, 0, 1);
-                           
+
         mat4 trans0 = mat4(1, 0, 0, pos0.x,
                            0, 1, 0, pos0.y,
                            0, 0, 1, pos0.z,
                            0, 0, 0, 1);
         mat4 Mbone0 =  trans0 * rotation0 *  inverse(trans0) ;
         //mat4 Mbone0 = rotation0;
-        
+
         //Second bone
         mat4 transInv1 = mat4(1, 0, 0, -pos1.x,
                            0, 1, 0, -pos1.y,
                            0, 0, 1, -pos1.z,
                            0, 0, 0, 1);
-                           
+
         mat4 trans1 = mat4(1, 0, 0, pos1.x,
                            0, 1, 0, pos1.y,
                            0, 0, 1, pos1.z,
                            0, 0, 0, 1);
 
-         mat4 Mbone1 = trans1 * rotation1 * inverse(trans1)   ;    
-        //mat4 Mbone1 = rotation1 * transInv1  * trans1 ;  
-                           
+         mat4 Mbone1 = trans1 * rotation1 * inverse(trans1)   ;
+        //mat4 Mbone1 = rotation1 * transInv1  * trans1 ;
+
 	// transformera resultatet med ModelView- och Projection-matriserna
 	vec4 vm0 = in_TexCoord.x * M0 * vec4(in_Position, 1.0);
 	vec4 vm1 = in_TexCoord.y * M1   * vec4(in_Position, 1.0);
@@ -62,17 +62,16 @@ void main(void)
 	//vec4 vm1 = in_TexCoord.y * Mbone1  * vec4(in_Position, 1.0);
 	//vec3 vm1 = ScalarMult(MultVec3(Mbone1,vm),g_boneWeights[row][corner].x);
 
-	
-	//gl_Position = matrix * (vm0 + vm1);
-	gl_Position = matrix * vec4(in_Position, 1.0);
 
-	// sätt röd+grön färgkanal till vertex Weights
+	gl_Position = matrix * (vm0 + vm1);
+	//gl_Position = matrix * vec4(in_Position, 1.0);
+
+	// sï¿½tt rï¿½d+grï¿½n fï¿½rgkanal till vertex Weights
 	vec4 color = vec4(in_TexCoord.x, in_TexCoord.y, 0.0, 1.0);
 
-	// Lägg på en enkel ljussättning på vertexarna 	
+	// Lï¿½gg pï¿½ en enkel ljussï¿½ttning pï¿½ vertexarna
 	float intensity = dot(in_Normal, lightDir);
 	color.xyz *= intensity;
 
 	g_color = color;
 }
-
