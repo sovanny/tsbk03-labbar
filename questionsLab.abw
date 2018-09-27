@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE abiword PUBLIC "-//ABISOURCE//DTD AWML 1.0 Strict//EN" "http://www.abisource.com/awml.dtd">
+<abiword template="false" xmlns:ct="http://www.abisource.com/changetracking.dtd" xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:math="http://www.w3.org/1998/Math/MathML" xid-max="26" xmlns:dc="http://purl.org/dc/elements/1.1/" styles="unlocked" fileformat="1.1" xmlns:svg="http://www.w3.org/2000/svg" xmlns:awml="http://www.abisource.com/awml.dtd" xmlns="http://www.abisource.com/awml.dtd" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.9.1" xml:space="preserve" props="dom-dir:ltr; document-footnote-restart-section:0; document-endnote-type:numeric; document-endnote-place-enddoc:1; document-endnote-initial:1; lang:en-GB; document-endnote-restart-section:0; document-footnote-restart-page:0; document-footnote-type:numeric; document-footnote-initial:1; document-endnote-place-endsection:0">
+<!-- ======================================================================== -->
+<!-- This file is an AbiWord document.                                        -->
+<!-- AbiWord is a free, Open Source word processor.                           -->
+<!-- More information about AbiWord is available at http://www.abisource.com/ -->
+<!-- You should not edit this file by hand.                                   -->
+<!-- ======================================================================== -->
+
+<metadata>
+<m key="abiword.date_last_changed">Thu Sep 20 15:34:23 2018
+</m>
+<m key="abiword.generator">AbiWord</m>
+<m key="dc.creator">Sovanny Huy Nikkilä</m>
+<m key="dc.date">Thu Sep 20 14:05:03 2018
+</m>
+<m key="dc.format">application/x-abiword</m>
+</metadata>
+<rdf>
+</rdf>
+<history version="2" edit-time="5622" last-saved="1537450463" uid="cbbff830-bccc-11e8-90e5-cc3d222e0011">
+<version id="2" started="1537445103" uid="e2fb5fc8-bcd9-11e8-90e5-cc3d222e0011" auto="0" top-xid="21"/>
+</history>
+<styles>
+<s type="P" name="Normal" followedby="Current Settings" props="font-family:Times New Roman; margin-top:0pt; color:000000; margin-left:0pt; text-position:normal; widows:2; font-style:normal; text-indent:0in; font-variant:normal; font-weight:normal; margin-right:0pt; font-size:12pt; text-decoration:none; margin-bottom:0pt; line-height:1.0; bgcolor:transparent; text-align:left; font-stretch:normal"/>
+</styles>
+<pagesize pagetype="A4" orientation="portrait" width="210.000000" height="297.000000" units="mm" page-scale="1.000000"/>
+<section xid="20" props="page-margin-footer:0.5000in; page-margin-header:0.5000in; page-margin-right:1.0000in; page-margin-left:1.0000in; page-margin-top:1.0000in; page-margin-bottom:1.0000in">
+<p style="Normal" xid="21"><c>﻿</c></p>
+<p style="Normal" xid="1"><c props="color:#000000">Hur ser högdagrarna ut i 1a? Varför?</c></p>
+<p style="Normal" xid="13"><c props="color:#000000">De ser vita och skarpa ut.</c></p>
+<p style="Normal" xid="14"><c props="color:#000000"></c></p>
+<p style="Normal" xid="2"><c props="color:#000000">Hur allokerar man en tom textur?</c></p>
+<p style="Normal" xid="16" props="text-align:left; dom-dir:ltr"><c>fbo1 = initFBO(W, H, 0);</c></p>
+<p style="Normal" xid="17" props="text-align:left; dom-dir:ltr"><c></c></p>
+<p style="Normal" xid="3"><c props="color:#000000">Hur många pass körde du lågpassfiltret i 1c och 1d?</c></p>
+<p style="Normal" xid="18"><c props="color:#000000">10 ggr</c></p>
+<p style="Normal" xid="19"><c props="color:#000000"></c></p>
+<p style="Normal" xid="5"><c props="color:#000000">Bör trunkeringen göras i egen shader eller som del av en shader som gör något mer? Varför?</c></p>
+<p style="Normal" xid="22"><c props="color:#000000">Det blir så rörigt om man har allt i samma.</c></p>
+<p style="Normal" xid="6"><c props="color:#000000"></c></p>
+<p style="Normal" xid="7"><c>﻿</c></p>
+<p style="Normal" xid="8"><c props="" props="color:#000000">Vilken bumpmappning tycker du är att föredra, vykoordinater eller texturkoordinater? </c></p>
+<p style="Normal" xid="24"><c props="" props="color:#000000"></c><c props="" props="color:#000000">Varför? Vad är skillnaden mellan att arbeta i vy- och texturkoordinater? Vilken bumpmappning (2a eller 2b) är lämplig för normalmapping?</c></p>
+<p style="Normal" xid="26"><c props="color:#000000"><br/> </c></p>
+<p style="Normal" xid="9"><c props="color:#000000">Definierar du bumpmappen som avstånd in i eller ut ur objektet? Var spelar det in?</c></p>
+<p style="Normal" xid="10"><c props="color:#000000">Blev Mvt rätt med mat3 i 2b? Om inte, vad gjorde du åt det?</c></p>
+<p style="Normal" xid="11"><c props="color:#000000"></c></p>
+<p style="Normal" xid="12"><c props="color:#000000"></c></p>
+</section>
+</abiword>
