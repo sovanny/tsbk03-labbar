@@ -159,6 +159,92 @@ void loadMaterial(Material mt)
     glUniform1fv(glGetUniformLocation(shader, "shininess"), 1, &mt.shininess);
 }
 
+void shortis(int i,int j){
+    
+    vec3 collision_vec = VectorSub(ball[i].X, ball[j].X);
+    float ballDist = Norm(collision_vec) - 2*kBallSize;
+    if(ballDist <= 0.0) // Potential collision
+    {
+        // Update velocities
+        ball[i].v = ScalarMult(ball[i].P, 1.0/(ball[i].mass));
+        ball[j].v = ScalarMult(ball[j].P, 1.0/(ball[j].mass));
+        vec3 v_diff = VectorSub(ball[i].v, ball[j].v);
+
+        // Are they really on their way toward eachother?
+        if(DotProduct(collision_vec, v_diff) < 0.0) {
+                // Change elasticity here
+                float elasticity = 1.0;
+
+                // Calculate relative velocity
+                vec3 n = ScalarMult(Normalize(collision_vec), 1);
+                float v_rel = DotProduct(v_diff, n);
+
+                // Compute impulse and forces
+                float j_imp = (v_rel * -(elasticity + 1))/(1/ball[i].mass + 1/ball[j].mass);
+                vec3 Imp = ScalarMult(n, j_imp);
+                ball[i].F = VectorAdd(ball[i].F, ScalarMult(Imp, 1/deltaT));
+                ball[j].F = VectorAdd(ball[j].F, ScalarMult(Imp, -1/deltaT));
+        }
+    }
+}
+
+void speciale(int i,int j){
+    
+    float epsilon = 1.0;
+    vec3 posDiff = VectorSub(ball[i].X, ball[j].X);
+    vec3 posDiffNormalized = Normalize(posDiff);
+    
+    float distanceBetweenBallCenters = Norm(posDiff); //magnitude of di
+    float distanceBetweenBalls = distanceBetweenBallCenters-2*kBallSize;
+        
+    //kolla differensen av hastigheterna för att kolla om de är påväg från varandra
+    
+    //vec3 tempVi = ScalarMult(ball[i].P, 1.0/(ball[i].mass));
+    //vec3 tempVj= ScalarMult(ball[j].P, 1.0/(ball[j].mass));
+    
+    //vec3 vRelVec = VectorSub(tempVi, tempVj);
+    vec3 vRelVec = VectorSub(ball[i].v, ball[j].v);
+    float vRelScalar = DotProduct(vRelVec, posDiffNormalized); //eventuell normalisera posDiff
+    
+    if(distanceBetweenBalls <= 0.0){
+        
+        printf("Ball %i and Ball %i is intersecting!\n",i,j);
+        printf("\tdistance %f: \n",distanceBetweenBalls);
+        
+        float speciale = DotProduct(posDiff,vRelVec);
+        
+        printf("\tspeciale %f: \n",speciale);
+        printf("\tvRelScalar %f: \n",vRelScalar);
+        bool isDivorcing = speciale > 0.0;
+        
+        if(!isDivorcing){
+            printf("\tAND ON COLLISION COURSE!\n");
+            //vec3 vPi = CrossProduct( ball[i].v, VectorAdd( ball[i].omega, ScalarMult( posDiffNormalized, -kBallSize)));
+            //vec3 vPj = CrossProduct( ball[j].v, VectorAdd( ball[j].omega, ScalarMult( posDiffNormalized, kBallSize)));
+
+
+            float jCoeffNom =  -((epsilon + 1.0)*vRelScalar);
+            float jCoeffDenom = (1.0/ball[i].mass) + (1.0/ball[j].mass);
+            float jCoeff = jCoeffNom/jCoeffDenom;
+            vec3 impact = ScalarMult(posDiffNormalized,jCoeff);
+            ball[i].F = VectorAdd(ball[i].F, ScalarMult(impact, 1/deltaT ));
+            ball[j].F = VectorAdd(ball[j].F, ScalarMult(impact, -1/deltaT ));
+        
+            //float margin = 0.05;
+            //ball[i].X = VectorAdd(ball[i].X, ScalarMult(posDiffNormalized, -(((2.0*kBallSize)-distanceBetweenBallCenters)/2)));
+            //ball[j].X = VectorAdd(ball[j].X, ScalarMult(posDiffNormalized, (((2.0*kBallSize)-distanceBetweenBallCenters)/2)));
+        }
+        else
+        {
+            printf("\t..but not on collision course!\n"); 
+        }
+
+    }      
+}
+
+
+
+
 //---------------------------------- physics update and billiard table rendering ----------------------------------
 void updateWorld()
 {
@@ -186,61 +272,14 @@ void updateWorld()
 	// Detect collisions, calculate speed differences, apply forces
 	for (i = 0; i < kNumBalls; i++)
 	{
-
-				vec3 distance;
-        for (j = i+1; j < kNumBalls; j++)
-        {
-            // YOUR CODE HERE
-						// vec3 nHatt = VectorSub(ball[i].X, ball[j].X);
-						// float distanceBetweenBalls = Norm(nHatt);
-						// //kolla differensen av hastigheterna för att kolla om de är påväg från varandra
-						// vec3 vDiff = VectorSub(ball[i].v, ball[j].v);
-						// bool isDivorcing = DotProduct(vDiff, nHatt) > 0;
-						//
-						// nHatt = Normalize(nHatt);
-						//
-						// if(distanceBetweenBalls <= kBallSize*2.0 && !isDivorcing){
-						//
-						// 	float epsilon = 1.0;
-						// 	//vec3 vPi = CrossProduct( ball[i].v, VectorAdd( ball[i].omega, ScalarMult( nHatt, -kBallSize)));
-						// 	//vec3 vPj = CrossProduct( ball[j].v, VectorAdd( ball[j].omega, ScalarMult( nHatt, kBallSize)));
-						//
-						// 	//float vMinus = DotProduct(VectorSub(vPi, vPj), nHatt);
-						//
-						// 	float vMinus = DotProduct(VectorSub(ball[i].v, ball[j].v), nHatt);
-						//
-						//
-						// 	float jCoeffNom =  -((epsilon + 1.0)*vMinus);
-						// 	float jCoeffDenom = (1.0/ball[i].mass) + (1.0/ball[j].mass);
-						//
-						// 	float jCoeff = jCoeffNom/jCoeffDenom;
-						//
-						// 	// dela på deltaT
-						// 	ball[i].F = VectorAdd(ball[i].F, ScalarMult(nHatt, -jCoeff/deltaT ));
-						// 	ball[j].F = VectorAdd(ball[j].F, ScalarMult(nHatt, jCoeff/deltaT ));
-						// 	//float margin = 0.05;
-						//
-						// 	ball[i].X = VectorAdd(ball[i].X, ScalarMult(nHatt, -(((2.0*kBallSize)-distanceBetweenBalls)/2)));
-						// 	ball[j].X = VectorAdd(ball[j].X, ScalarMult(nHatt, (((2.0*kBallSize)-distanceBetweenBalls)/2)));
-
-						distance = VectorSub(ball[i].X,ball[j].X);
-						if(Norm(distance)<= kBallSize*2){
-							float epsilon = 1.0;
-							vec3 normal = Normalize(distance);
-							vec3 properDistanceWithNoOverlap = ScalarMult(normal,kBallSize*2);
-							vec3 overlap = VectorSub(properDistanceWithNoOverlap,distance);
-							ball[i].X = VectorAdd(ball[i].X,overlap);
-							ball[j].X = VectorAdd(ball[j].X,overlap);
-
-							vec3 relativeVelocity = VectorSub(ball[i].v, ball[j].v);
-							float jCoeffNom = -(epsilon +1.0) * DotProduct(relativeVelocity,normal);
-							float jCoeffDenom = (1.0/ball[i].mass) + (1.0/ball[j].mass);
-							float impulse = jCoeffNom/jCoeffDenom;
-							ball[i].P = VectorAdd(ball[i].P, ScalarMult(normal,impulse));
-							ball[i].P = VectorAdd(ball[j].P, ScalarMult(normal,-impulse));
-						}
+            //vec3 distance;
+            for (j = i+1; j < kNumBalls; j++)
+            {
+                speciale(i,j);
+                //shortis(i,j);
+            }
         }
-			}
+                
 
 	// Control rotation here to reflect
 	// friction against floor, simplified as well as more correct
