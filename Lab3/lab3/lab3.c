@@ -42,7 +42,7 @@
 void onTimer(int value);
 
 static double startTime = 0;
-
+int frameCounter = 0;
 void resetElapsedTime()
 {
   struct timeval timeVal;
@@ -102,7 +102,7 @@ Material ballMt = { { 1.0, 1.0, 1.0, 1.0 }, { 1.0, 1.0, 1.0, 0.0 },
                 };
 
 
-enum {kNumBalls = 4}; // Change as desired, max 16
+enum {kNumBalls = 16}; // Change as desired, max 16
 //enum {kNumBalls = 4};
 
 //------------------------------Globals---------------------------------
@@ -164,45 +164,57 @@ void printForDebug(int i, int j)
     vec3 tempVj= ScalarMult(ball[j].P, 1.0/(ball[j].mass));
     //varför är de olika
     printf("\tBall %i velocity:",i);
-    printVec3(tempVi); 
+    printVec3(tempVi);
     printf("\tBall %i velocity:",i);
-    printVec3(ball[i].v); 
-    
+    printVec3(ball[i].v);
+
     printf("\tBall %i velocity:",j);
-    printVec3(tempVj); 
+    printVec3(tempVj);
     printf("\tBall %i velocity:",j);
-    printVec3(ball[j].v); 
+    printVec3(ball[j].v);
 }
 
 void speciale(int i,int j){
-    
+
     float epsilon = 0.0;
     vec3 posDiff = VectorSub(ball[i].X, ball[j].X);
-    vec3 posDiffNormalized = Normalize(posDiff);
-    
+		vec3 posDiffNormalized;
+		if(posDiff.x == 0.0 && posDiff.y == 0.0 && posDiff.z == 0.0){
+			posDiffNormalized = posDiff;
+		}
+		else{
+			posDiffNormalized = Normalize(posDiff);
+		}
+
+
+		// printf("\tball %i X:",i);printVec3(ball[i].X);
+		// printf("\tball %i X:",j);printVec3(ball[j].X);
+		// printf("\tposDiff:");printVec3(posDiff);
+		// printf("\tposDiffNormalized:");printVec3(posDiffNormalized);
+
     float distanceBetweenBallCenters = Norm(posDiff); //magnitude of di
     float distanceBetweenBalls = distanceBetweenBallCenters-2*kBallSize;
-    
+
     //vec3 tempVi = ScalarMult(ball[i].P, 1.0/(ball[i].mass));
     //vec3 tempVj= ScalarMult(ball[j].P, 1.0/(ball[j].mass));
-    
+
     //vec3 vRelVec = VectorSub(tempVi, tempVj);
     vec3 vRelVec = VectorSub(ball[i].v, ball[j].v);
     float vRelScalar = DotProduct(vRelVec, posDiffNormalized); //eventuell normalisera posDiff
-    
-    
+
+
     if(distanceBetweenBalls <= 0.0){
-        
+
     	//printForDebug(i,j);
         float speciale = DotProduct(posDiff,vRelVec);
-        
+
         //printf("Ball %i and Ball %i is intersecting!\n",i,j);
         //printf("\tdistance %f: \n",distanceBetweenBalls);
         //printf("\tspeciale %f: \n",speciale);
         //printf("\tvRelScalar %f: \n",vRelScalar);
-        
+
         bool isDivorcing = speciale > 0.0;
-        
+
         if(!isDivorcing){
             //printf("\tAND ON COLLISION COURSE!\n");
 
@@ -210,20 +222,25 @@ void speciale(int i,int j){
             float jCoeffDenom = (1.0/ball[i].mass) + (1.0/ball[j].mass);
             float jCoeff = jCoeffNom/jCoeffDenom;
             vec3 impact = ScalarMult(posDiffNormalized,jCoeff);
-            
+
             //ball[i].F = VectorAdd(ball[i].F, ScalarMult(impact, 1/deltaT ));
             //ball[j].F = VectorAdd(ball[j].F, ScalarMult(impact, -1/deltaT ));
-            
+						if(impact.x != impact.x){
+							printf("Ball %i and %i has PROBLEMS!!!",i,j );printVec3(impact);
+							printf("\tposDiffNormalized:");printVec3(posDiffNormalized);
+							printf("\tvRelScalar %f\n",vRelScalar);
+
+						}
             ball[i].P = VectorAdd(ball[i].P, impact);
-			ball[j].P = VectorAdd(ball[j].P, ScalarMult(impact, -1));
+						ball[j].P = VectorAdd(ball[j].P, ScalarMult(impact, -1));
 
         }
         else
         {
-            //printf("\t..but not on collision course!\n"); 
+            //printf("\t..but not on collision course!\n");
         }
 
-    }      
+    }
 }
 
 //---------------------------------- physics update and billiard table rendering ----------------------------------
@@ -260,7 +277,7 @@ void updateWorld()
                 //shortis(i,j);
             }
         }
-                
+
 
 	// Control rotation here to reflect
 	// friction against floor, simplified as well as more correct
@@ -272,28 +289,28 @@ void updateWorld()
 		//vec3 perp = CrossProduct(yaxis, ball[i].v);
 		//float angle = sqrt(pow(ball[i].v.x, 2.0) + pow(ball[i].v.y, 2.0) + pow(ball[i].v.z, 2.0)) * 0.2;
 		//ball[i].R = MultMat4(ArbRotate(perp, angle), ball[i].R);
-		
+
 		//New stuff
 		if(Norm(ball[i].v)!= 0.0){
 
-			
+
 			vec3 whereAreWeRolling = CrossProduct(yaxis,ball[i].omega);
 			vec3 relativeVelocity = VectorSub(ball[i].v, whereAreWeRolling); //Hur mycket åker vi utan att rulla? alternativt glidfart
-			
+
 			vec3 friction = ScalarMult(relativeVelocity,0.2);
 
 			ball[i].T = VectorSub(ball[i].T, CrossProduct(yaxis,friction));
 			ball[i].F = VectorSub(ball[i].F, friction);
-			
+
 			printf("ROTATION for Ball %i\n",i);
-			
+
 			printf("\trelativeVelocity: "); printVec3(relativeVelocity);
 			printf("\tfriction: "); printVec3(friction);
 			printf("\tT: "); printVec3(ball[i].T);
 			printf("\tF: "); printVec3(ball[i].F);
 		}
-        
-       
+
+
 
 
 	}
@@ -304,14 +321,19 @@ void updateWorld()
 		vec3 dX, dP, dL, dO;
 		mat4 Rd;
 
+		// printf("BALL %i BEFORE UPDATE\n",i);
+		// printf("\tF: "); printVec3(ball[i].F);
+		// printf("\tT: "); printVec3(ball[i].T);
+		// printf("\tomega: "); printVec3(ball[i].omega);
+		// printf("\tv: "); printVec3(ball[i].v);
+		// printf("\tX: "); printVec3(ball[i].X);
+		// printf("\tL: "); printVec3(ball[i].L);
+		// printf("\tP: "); printVec3(ball[i].P);
+
 		// Note: omega is not set. How do you calculate it?
 		// YOUR CODE HERE
 		ball[i].omega = MultVec3(ball[i].Ji,ball[i].L);
-		
-		printf("UPDATE for Ball %i\n",i);
-		printf("\tL: "); printVec3(ball[i].L);
-		printf("\tomega: "); printVec3(ball[i].omega);
-		
+
 //		v := P * 1/mass
 		ball[i].v = ScalarMult(ball[i].P, 1.0/(ball[i].mass));
 //		X := X + v*dT
@@ -330,6 +352,16 @@ void updateWorld()
 		ball[i].L = VectorAdd(ball[i].L, dL); // L := L + dL
 
 		OrthoNormalizeMatrix(&ball[i].R);
+
+		printf("BALL %i AFTER UPDATE\n",i);
+		printf("\tF: "); printVec3(ball[i].F);
+		printf("\tT: "); printVec3(ball[i].T);
+		printf("\tomega: "); printVec3(ball[i].omega);
+		printf("\tv: "); printVec3(ball[i].v);
+		printf("\tX: "); printVec3(ball[i].X);
+		printf("\tL: "); printVec3(ball[i].L);
+		printf("\tP: "); printVec3(ball[i].P);
+
 	}
 }
 
@@ -406,9 +438,9 @@ void init()
         LoadTGATextureSimple(textureStr, &ball[i].tex);
     }
 	free(textureStr);
-	
 
-    
+
+
 
     // Initialize ball data, positions etc
 	for (i = 0; i < kNumBalls; i++)
@@ -418,9 +450,9 @@ void init()
 		ball[i].P = SetVector(((float)(i % 13))/ 50.0, 0.0, ((float)(i % 15))/50.0);
 		ball[i].R = IdentityMatrix();
 	}
-	
-	ball[1].mass = 3.0;
-	
+
+	//ball[1].mass = 3.0;
+
 	ball[0].X = SetVector(0, 0, 0);
 	ball[1].X = SetVector(0, 0, 0.5);
 	ball[2].X = SetVector(0.0, 0, 1.0);
@@ -428,15 +460,15 @@ void init()
 	ball[0].P = SetVector(0, 0, 0);
 	ball[1].P = SetVector(0, 0, 0);
 	ball[2].P = SetVector(0, 0, 0);
-	ball[3].P = SetVector(0.06, 0, 3.00);
+	ball[3].P = SetVector(0.06, 0, 10.00);
 
     cam = SetVector(0, 2, 2);
     point = SetVector(0, 0, 0);
     zprInit(&viewMatrix, cam, point);  // camera controls
-    
+
 	//Initialize moment of intertia
-    
-    
+
+
 	for (i = 0; i < kNumBalls; i++)
 	{
 		float w = ball[i].mass*kBallSize*kBallSize/12;
@@ -454,11 +486,16 @@ void init()
 //-------------------------------callback functions------------------------------------------
 void display(void)
 {
+
 	int i;
     // This function is called whenever it is time to render
     //  a new frame; due to the idle()-function below, this
     //  function will get called several times per second
-    updateWorld();
+		printf("=== FRAME NR %i\n",frameCounter);
+		// if(frameCounter < 2){
+		//
+		// }
+		updateWorld();
 
     // Clear framebuffer & zbuffer
 	glClearColor(0.1, 0.1, 0.3, 0);
@@ -482,6 +519,7 @@ void display(void)
     printError("rendering");
 
 	glutSwapBuffers();
+	frameCounter+=1;
 }
 
 void onTimer(int value)
