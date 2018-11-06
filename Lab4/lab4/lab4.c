@@ -24,9 +24,13 @@ float kCohesionRadius = 150.0;
 float kAvoidanceRadius = 100.0;
 float kCohesionWeight = 0.001;
 float kAvoidanceWeight = 0.01;
+float kPredatorAvoidanceWeight = 0.05;
 float kAlignmentWeight = 0.01;
 float kRandomWeight = 0.01;
+float kPredatorRandomWeight = 0.05;
 int frameCounter = 0;
+
+float kPredatorAvoidanceRadius = 200.0;
 
 TextureData *sheepFace, *blackFace, *dogFace, *foodFace;
 
@@ -53,7 +57,23 @@ float calculateDistanceFPoint(FPoint fp1, FPoint fp2){
 	return sqrt( pow(fp1.h - fp2.h, 2.0) + pow(fp1.v - fp2.v, 2.0) );
 }
 
-
+char* getFaceName(TextureData *face)
+{   
+    char *name;
+    if(face == dogFace){
+        name = "Dog";
+    } 
+    else if(face == sheepFace)
+    {
+        name = "Sheep";
+    }
+    else if(face == blackFace)
+    {
+        name = "Black";
+    }
+    return name;
+    
+}
 
 void SpriteBehavior() // Din kod!
 {
@@ -61,7 +81,7 @@ void SpriteBehavior() // Din kod!
 // koden i �vrigt, men mycket kan samlas h�r. Du kan utg� fr�n den
 // globala listroten, gSpriteRoot, f�r att kontrollera alla sprites
 // hastigheter och positioner, eller arbeta fr�n egna globaler.
-// L�gg till din labbkod h�r. Det g�r bra att �ndra var som helst i
+// L�gg till din labbkod h�r.char Det g�r bra att �ndra var som helst i
 // koden i �vrigt, men mycket kan samlas h�r. Du kan utg� fr�n den
 // globala listroten, gSpriteRoot, f�r att kontrollera alla sprites
 // hastigheter och positioner, eller arbeta fr�n egna globaler.
@@ -74,6 +94,7 @@ void SpriteBehavior() // Din kod!
 	firstSp = gSpriteRoot;
 	int outerCount = 0;
 	//räkna ut average osv
+        
 	while (firstSp != NULL){
 		secondSp = gSpriteRoot;
 		FPoint totalPosition = {0.0, 0.0};
@@ -81,68 +102,97 @@ void SpriteBehavior() // Din kod!
 		FPoint speedDiff = {0.0,0.0};
 
 		float nSpritesNearby = 0.0;
-		printf("OUTER sprite: %i\n", outerCount);
+                
+                FPoint predatorAvoidanceVector = {0.0,0.0};
+                
+		printf("%i FirstSp: %s\n", outerCount,getFaceName(firstSp->face));
 		float maxDistance = 0.0;
-		while (secondSp != NULL){
+		while (secondSp != NULL){ //for each boid check against all other boids
+                        printf("\tSecondSp: %s\n",getFaceName(secondSp->face));
 			if(firstSp != secondSp){
+                            
+                                distance = calculateDistanceFPoint(firstSp->position, secondSp->position);
+                                if(secondSp->face != dogFace){
+                                    
+                                    if(distance > maxDistance)
+                                    {
+                                            maxDistance = distance;
+                                    }
+                                    
+                                    //Todo: check if white sheep or not
+                                    
+                                    if(distance <= kCohesionRadius){
+                                            totalPosition.h += secondSp->position.h;
+                                            totalPosition.v += secondSp->position.v;
+                                            //ackumulera skillnader i hastighet
+                                            speedDiff = add(speedDiff,subtract(secondSp->speed,firstSp->speed));
 
-				distance = calculateDistanceFPoint(firstSp->position, secondSp->position);
-				if(distance > maxDistance)
-				{
-					maxDistance = distance;
-				}
-				//Todo: check if white sheep or not
-				if(distance <= kCohesionRadius){
-					totalPosition.h += secondSp->position.h;
-					totalPosition.v += secondSp->position.v;
+                                            nSpritesNearby += 1.0;
+                                    }
 
-					speedDiff = add(speedDiff,subtract(secondSp->speed,firstSp->speed));
-
-					nSpritesNearby += 1.0;
-				}
-
-				if(distance <= kAvoidanceRadius){
-					FPoint posDiffVector = subtract(firstSp->position,secondSp->position);
-					float distanceFactor = (1-sqrt(distance/kAvoidanceRadius));
-					posDiffVector = mult(posDiffVector,distanceFactor);
-					avoidanceVector = add(avoidanceVector, posDiffVector);
-				}
+                                    if(distance <= kAvoidanceRadius){
+                                            FPoint posDiffVector = subtract(firstSp->position,secondSp->position);
+                                            float distanceFactor = (1-sqrt(distance/kAvoidanceRadius));
+                                            posDiffVector = mult(posDiffVector,distanceFactor);
+                                            avoidanceVector = add(avoidanceVector, posDiffVector);
+                                    }
+                                }
+                                else{
+                                   printf("\t\tdogFace, not calculating\n"); 
+                                   if(distance <= kPredatorAvoidanceRadius){
+                                            FPoint posDiffVector = subtract(firstSp->position,secondSp->position);
+                                            float distanceFactor = (1-sqrt(distance/kPredatorAvoidanceRadius));
+                                            posDiffVector = mult(posDiffVector,distanceFactor);
+                                            predatorAvoidanceVector = add(predatorAvoidanceVector, posDiffVector);
+                                    }
+                                }
+				
 			}
 			secondSp=secondSp->next;
 		}
+                printf("\tChanging stuff: \n");
+                
+                if(firstSp->face == blackFace){
+                    printf("\tblack sheep, add random\n"); 
+                    FPoint randVec = {(rand()/(float)RAND_MAX),(rand()/(float)RAND_MAX)};
+                    randVec = mult(randVec,kRandomWeight);
+                    firstSp->speed = add(firstSp->speed,randVec);
+                }
+                else if(firstSp->face == dogFace){
+                    printf("\tdog, add random\n"); 
+                    FPoint randVec = {(rand()/(float)RAND_MAX),(rand()/(float)RAND_MAX)};
+                    randVec = mult(randVec,kPredatorRandomWeight);
+                    firstSp->speed = add(firstSp->speed,randVec);
+                } 
+                else{
+                    //calculate average position
+                    if(nSpritesNearby > 0){
+                        printf("\tnormal sheep!\n"); 
+                        //COHESION
+                        FPoint avgPosition = {totalPosition.h/nSpritesNearby, totalPosition.v/nSpritesNearby};
+                        FPoint cohesionVector = subtract(avgPosition,firstSp->position);
+                        cohesionVector = mult(cohesionVector,kCohesionWeight);
+                        firstSp->speed = add(firstSp->speed,cohesionVector);
 
-		//calculate average position
-		if(nSpritesNearby > 0){
+                        //SEPARTAION
+                        avoidanceVector = divideByScalar(avoidanceVector,nSpritesNearby);
+                        avoidanceVector = mult(avoidanceVector,kAvoidanceWeight);
+                        printf("\tavoidanceVector: (%f,%f)\n",avoidanceVector.v,avoidanceVector.h );
+                        firstSp->speed = add(firstSp->speed,avoidanceVector);
+                        
+                        //SEPARTAION FROM DOG
+                        predatorAvoidanceVector = divideByScalar(predatorAvoidanceVector,nSpritesNearby);
+                        predatorAvoidanceVector = mult(predatorAvoidanceVector,kPredatorAvoidanceWeight);
+                        printf("\tPredator avoidanceVector: (%f,%f)\n",predatorAvoidanceVector.v,predatorAvoidanceVector.h );
+                        firstSp->speed = add(firstSp->speed,predatorAvoidanceVector);
 
+                        //ALIGNMENT
+                        speedDiff = divideByScalar(speedDiff,nSpritesNearby);
+                        speedDiff = mult(speedDiff,kAlignmentWeight);
+                        firstSp->speed = add(firstSp->speed,speedDiff);
 
-			if(firstSp->face == blackFace){
-				FPoint randVec = {(rand()/(float)RAND_MAX),(rand()/(float)RAND_MAX)};
-				randVec = mult(randVec,kRandomWeight);
-				firstSp->speed = add(firstSp->speed,randVec);
-			}
-			else
-			{
-
-				//COHESION
-				FPoint avgPosition = {totalPosition.h/nSpritesNearby, totalPosition.v/nSpritesNearby};
-				FPoint cohesionVector = subtract(avgPosition,firstSp->position);
-				cohesionVector = mult(cohesionVector,kCohesionWeight);
-				firstSp->speed = add(firstSp->speed,cohesionVector);
-
-				//SEPARTAION
-				avoidanceVector = divideByScalar(avoidanceVector,nSpritesNearby);
-				avoidanceVector = mult(avoidanceVector,kAvoidanceWeight);
-				printf("\tavoidanceVector: (%f,%f)\n",avoidanceVector.v,avoidanceVector.h );
-				firstSp->speed = add(firstSp->speed,avoidanceVector);
-
-				//ALIGNMENT
-				speedDiff = divideByScalar(speedDiff,nSpritesNearby);
-				speedDiff = mult(speedDiff,kAlignmentWeight);
-				firstSp->speed = add(firstSp->speed,speedDiff);
-			}
-
-
-		}
+                    }
+                }
 
 
 
@@ -170,6 +220,16 @@ void SpriteBehavior() // Din kod!
 
 
 }
+void AddPredator(){
+    
+    	
+        NewSprite(dogFace, rand() % 700 + 50,
+		rand() % 500 + 50,
+		((rand() % 200) - 100) / 20.0,
+                ((rand() % 200) - 100) / 20.0);
+    
+}
+    
 
 // Drawing routine
 void Display()
@@ -219,6 +279,8 @@ void Key(unsigned char key,
          __attribute__((unused)) int x,
          __attribute__((unused)) int y)
 {
+    
+    AddPredator();
   switch (key)
   {
     case '+':
@@ -234,6 +296,8 @@ void Key(unsigned char key,
   }
 }
 
+
+
 void Init()
 {
 	//TextureData *sheepFace, *blackFace, *dogFace, *foodFace;
@@ -242,7 +306,7 @@ void Init()
 
 	sheepFace = GetFace("bilder/sheep.tga"); // Ett f�r
 	blackFace = GetFace("bilder/blackie.tga"); // Ett svart f�r
-	dogFace = GetFace("bilder/dog.tga"); // En hund
+        dogFace = GetFace("bilder/dog.tga"); // En hund
 	foodFace = GetFace("bilder/mat.tga"); // Mat
 
 	NewSprite(sheepFace, 100, 200, 1, 1);
@@ -250,7 +314,9 @@ void Init()
 	NewSprite(sheepFace, 250, 200, -1, 1.5);
 	NewSprite(sheepFace, 300, 100, -1, 1.5);
 	NewSprite(blackFace, 350, 200, -1, 1.5);
-	NewSprite(foodFace, 600, 600, -1, 1.5);
+	NewSprite(sheepFace, 600, 600, -1, 1.5);
+        
+
 }
 
 int main(int argc, char **argv)
@@ -268,6 +334,8 @@ int main(int argc, char **argv)
 
 	InitSpriteLight();
 	Init();
+        
+        
 
 	glutMainLoop();
 	return 0;
