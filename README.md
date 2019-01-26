@@ -1,3 +1,3 @@
 # tsbk03-labbar
 
-Course webpage: http://computer-graphics.se/TSBK07/
+Course webpage: http://computer-graphics.se/TSBK03/
